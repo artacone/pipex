@@ -52,18 +52,58 @@ int	main(int argc, char *argv[])
 {
 	int		fd_in;
 	int		fd_out;
-	char	**arg1;
-	char	**arg2;
+	char	**cmd;
 
-	if (argc == 5)
+	if (argc < 5)
 	{
-		arg1 = ft_split(argv[2], ' ');
-		arg2 = ft_split(argv[3], ' ');
-		fd_in = open(argv[1], O_RDONLY);
-		fd_out = open(argv[4], O_WRONLY | O_TRUNC | O_CREAT);
-		ft_pipe(arg1, arg2, fd_in, fd_out);
-		close(fd_in);
-		close(fd_out);
+		return (1); // FIXME usage error
 	}
+
+	int		number_cmds = argc - 3;
+	pid_t	pids[number_cmds]; // FIXME malloc
+	int		pipes[number_cmds - 1][2]; // FIXME malloc
+
+	// Create pipes
+	for (int i = 0; i < number_cmds - 1; i++)
+	{
+		if (pipe(pipes[i]) == -1) { return (2); } // pipe() error
+	}
+
+	// Create processes
+	for (int i = 0; i < number_cmds; i++)
+	{
+		pids[i] = fork();
+		if (pids[i] == -1) { return (3); } // fork() error
+
+		if (pids[i] == 0)
+		{
+			// Close extra pipes ends
+			for (int j = 0; j < number_cmds - 1; j++)
+			{
+				if (i != j)
+				{
+					close(pipes[j][0]);
+				}
+				if (i + 1 != j)
+				{
+					close(pipes[j][1]);
+				}
+			}
+
+			cmd = ft_split(argv[i + 2], ' '); // FIXME index
+			execvp(cmd[0], cmd);
+		}
+	}
+	fd_in = open(argv[1], O_RDONLY);
+	fd_out = open(argv[argc - 1], O_WRONLY | O_TRUNC | O_CREAT, 0777);
+
+	cmd_left = ft_split(argv[2], ' ');
+	cmd_right = ft_split(argv[3], ' ');
+
+	ft_pipe(cmd_left, cmd_right, fd_in, fd_out);
+
+	close(fd_in);
+	close(fd_out);
+
 	return (0);
 }
