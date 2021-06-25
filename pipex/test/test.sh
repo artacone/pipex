@@ -36,6 +36,12 @@ echo "# ${GREEN}BINARY DOES NOT EXIST:${NC}"
 echo "${CYAN}./pipex file1 \"rabbit\" \"grep a\" file3${NC}" && ./pipex file1 "rabbit" "grep a" file3
 echo "${CYAN}./pipex file1 \"cat -e\" \"hole\" file3${NC}" && ./pipex file1 "cat -e" "hole" file3
 
+echo "# ${GREEN}BINARY RIGHTS ARE INCORRECT:${NC}"
+touch myprog
+chmod -x myprog
+echo "${CYAN}./pipex file1 \"./myprog\" \"grep a\" file3${NC}" && ./pipex file1 "./myprog" "grep a" file3
+echo "${CYAN}./pipex file1 \"./myprog\" \"ls -l\" file3${NC}" && ./pipex file1 "./myprog" "ls -l" file3
+
 ########################################################################################################################
 #echo "### ${PURPLE}IDENTITY TEST${NC} ###"
 ########################################################################################################################

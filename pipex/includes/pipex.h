@@ -5,6 +5,7 @@
 # include <fcntl.h>
 # include <sys/wait.h>
 # include <string.h>
+# include <errno.h>
 # include <stdio.h> // FIXME
 # include "../libft/includes/libft.h"
 
@@ -20,6 +21,8 @@ typedef struct s_manager
 	int		argc;
 	char	**argv;
 	char	**envp;
+	char	*infile;
+	char	*outfile;
 	int		n_cmds;
 	int		n_pipes;
 	pid_t	*pids;
