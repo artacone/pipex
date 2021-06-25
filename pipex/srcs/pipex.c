@@ -91,6 +91,42 @@ void	close_pipes(t_manager *manager)
 	}
 }
 
+char	*get_cmd_path(t_manager *manager, char **cmd)
+{
+	char	*cmd_path;
+	char	**path;
+
+	cmd_path = NULL;
+	path = NULL;
+	for (int i = 0; (manager->envp)[i] != NULL; i++)
+	{
+		if (ft_strncmp("PATH=", (manager->envp)[i], 5) == 0)
+		{
+			char *path_string = (manager->envp)[i];
+			path = ft_split(ft_strchr(path_string, '=') + 1, ':');
+			if (path == NULL)
+			{
+				handle_error(ERROR_ALLOC);
+			}
+			break ;
+		}
+	}
+
+	if (path != NULL)
+	{
+		for (char *curr_path = *path; curr_path != NULL; curr_path = *(++path))
+		{
+			cmd_path = ft_strjoin(curr_path, "/");
+			cmd_path = ft_strjoin(cmd_path, cmd[0]);
+			if (access(cmd_path, X_OK) == 0)
+			{
+				return (cmd_path);
+			}
+		}
+	}
+	return (cmd_path);
+}
+
 void	execute_cmd(t_manager *manager, int i)
 {
 	char	**cmd;
@@ -114,8 +150,9 @@ void	execute_cmd(t_manager *manager, int i)
 	}
 	else
 	{
-
-		execvp(cmd[0], cmd);
+		char	*cmd_path;
+		cmd_path = get_cmd_path(manager, cmd);
+		execve(cmd_path, cmd, manager->envp);
 	}
 	handle_error_exec(cmd[0]);
 }
