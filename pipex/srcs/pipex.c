@@ -1,125 +1,205 @@
 #include "../includes/pipex.h"
 
-//void	ft_pipe(char **cmd1, char **cmd2, int fd_in, int fd_out)
-//{
-//	int		pipe_fds[2];
-//	pid_t	pid_1;
-//	pid_t	pid_2;
-//
-//	if (pipe(pipe_fds) == -1)
-//	{
-//		exit(1); // pipe error
-//	}
-//	pid_1 = fork();
-//	if (pid_1 == -1)
-//	{
-//		exit(2); // fork error
-//	}
-//	if (pid_1 == 0) // Child process 1 (cmd1)
-//	{
-//		close(pipe_fds[0]);
-//		dup2(fd_in, 0);
-//		close(fd_in);
-//
-//		dup2(pipe_fds[1], STDOUT_FILENO);
-//		close(pipe_fds[1]);
-//
-//		execvp(cmd1[0], cmd1);
-//	}
-//	pid_2 = fork();
-//	if (pid_2 == -1)
-//	{
-//		exit(2); // fork error
-//	}
-//	if (pid_2 == 0) // Child process 2 (cmd2)
-//	{
-//		close(pipe_fds[1]);
-//		dup2(fd_out, 1);
-//		close(fd_out);
-//
-//		dup2(pipe_fds[0], STDIN_FILENO);
-//		close(pipe_fds[0]);
-//
-//		execvp(cmd2[0], cmd2);
-//	}
-//	close(pipe_fds[0]);
-//	close(pipe_fds[1]);
-//	waitpid(pid_1, NULL, 0);
-//	waitpid(pid_2, NULL, 0);
-//}
+/*
+ * TODO free stuff
+ * bonus <<>>
+ */
 
-int	main(int argc, char *argv[])
+void	wait_for_children(t_manager *manager, int n)
 {
-	int		fd_in;
-	int		fd_out;
+	for (int i = 0; i < n; i++)
+	{
+		waitpid((manager->pids)[i], NULL, 0);
+	}
+}
+
+void	handle_error(int error_code)
+{
+	perror(NULL);
+	exit(error_code);
+}
+
+void	handle_error_exec(char *cmd_name)
+{
+	ft_putstr_fd("command not found: ", 2);
+	ft_putendl_fd(cmd_name, 2);
+	exit(ERROR_EXEC);
+}
+
+void	create_pipes(t_manager *manager)
+{
+	int	**pipes;
+
+	pipes = (int **)malloc(manager->n_pipes * sizeof(int *));
+	if (pipes == NULL)
+	{
+		handle_error(ERROR_ALLOC);
+	}
+	for (int i = 0; i < manager->n_pipes; i++)
+	{
+		pipes[i] = (int *)malloc(2 * sizeof(int));
+		if (pipes[i] == NULL)
+		{
+			handle_error(ERROR_ALLOC);
+		}
+	}
+	// Open pipes
+	for (int i = 0; i < manager->n_pipes; i++)
+	{
+		if (pipe(pipes[i]) == -1)
+		{
+			handle_error(ERROR_PIPE);
+		}
+	}
+	manager->pipes = pipes;
+}
+
+t_manager	*init_manager(int argc, char *argv[], char *envp[])
+{
+	t_manager	*manager;
+
+	manager = (t_manager *)malloc(sizeof(*manager));
+	if (manager == NULL)
+	{
+		handle_error(ERROR_ALLOC);
+	}
+	manager->argc = argc;
+	manager->argv = argv;
+	manager->envp = envp;
+	manager->n_cmds = argc - 3;
+	manager->n_pipes = manager->n_cmds - 1;
+	manager->pids = (pid_t *)malloc(manager->n_cmds * sizeof(pid_t));
+	if (manager->pids == NULL)
+	{
+		handle_error(ERROR_ALLOC);
+	}
+	create_pipes(manager);
+	return (manager);
+}
+
+void	close_pipes(t_manager *manager)
+{
+	int	n_pipes;
+	int	**pipes;
+
+	n_pipes = manager->n_pipes;
+	pipes = manager->pipes;
+	for (int i = 0; i < n_pipes; i++)
+	{
+		close(pipes[i][0]);
+		close(pipes[i][1]);
+	}
+}
+
+void	execute_cmd(t_manager *manager, int i)
+{
 	char	**cmd;
 
-	if (argc < 5)
+	close_pipes(manager);
+
+	cmd = ft_split((manager->argv)[i + 2], ' ');
+	if (cmd == NULL)
 	{
-		return (1); // FIXME usage error
+		handle_error(ERROR_ALLOC);
 	}
-
-	int		number_cmds = argc - 3;
-	int		number_pipes = number_cmds - 1;
-	pid_t	pids[number_cmds]; // FIXME malloc
-	int		pipes[number_pipes][2]; // FIXME malloc
-
-	// Create pipes
-	for (int i = 0; i < number_pipes; i++)
+	int	is_path = 0;
+	if (ft_strncmp(cmd[0], "/", 1) == 0
+		|| ft_strncmp(cmd[0], ".", 1) == 0)
 	{
-		if (pipe(pipes[i]) == -1) { return (2); } // pipe() error
+		is_path = 1;
 	}
+	if (is_path)
+	{
+		execve(cmd[0], cmd, manager->envp);
+	}
+	else
+	{
 
-	// Create processes
-	for (int i = 0; i < number_cmds; i++)
+		execvp(cmd[0], cmd);
+	}
+	handle_error_exec(cmd[0]);
+}
+
+void	execute_cmd1(t_manager *manager)
+{
+	int	fd_in;
+	int	**pipes;
+
+	pipes = manager->pipes;
+	fd_in = open((manager->argv)[1], O_RDONLY); // FIXME handle error
+	if (fd_in == -1)
+	{
+		handle_error(ERROR_OPEN);
+	}
+	dup2(fd_in, STDIN_FILENO);
+	close(fd_in);
+	dup2(pipes[0][1], STDOUT_FILENO);
+	execute_cmd(manager, 0);
+}
+
+void	execute_cmdn(t_manager *manager)
+{
+	int	fd_out;
+	int	**pipes;
+
+	fd_out = open((manager->argv)[manager->argc - 1], O_WRONLY | O_TRUNC | O_CREAT, 0777);
+	if (fd_out == -1)
+	{
+		handle_error(ERROR_OPEN);
+	}
+	pipes = manager->pipes;
+	dup2(fd_out, STDOUT_FILENO);
+	close(fd_out);
+	dup2(pipes[manager->n_pipes - 1][0], STDIN_FILENO);
+	execute_cmd(manager, manager->n_cmds - 1);
+}
+
+void	ft_pipex(t_manager *manager)
+{
+	pid_t	*pids;
+	int 	**pipes;
+
+	pids = manager->pids;
+	pipes = manager->pipes;
+	for (int i = 0; i < manager->n_cmds; i++)
 	{
 		pids[i] = fork();
-		if (pids[i] == -1) { return (3); } // fork() error
-
+		if (pids[i] == -1)
+		{
+			wait_for_children(manager, i);
+			handle_error(ERROR_FORK);
+		}
 		if (pids[i] == 0) // i-th child
 		{
 			if (i == 0)
-			{
-				fd_in = open(argv[1], O_RDONLY);
-				dup2(fd_in, STDIN_FILENO);
-				close(fd_in);
-				dup2(pipes[i][1], STDOUT_FILENO);
-			}
-			else if (i == number_cmds - 1)
-			{
-				fd_out = open(argv[argc - 1], O_WRONLY | O_TRUNC | O_CREAT, 0777);
-				dup2(fd_out, STDOUT_FILENO);
-				close(fd_out);
-				dup2(pipes[i - 1][0], STDIN_FILENO);
-			}
+				execute_cmd1(manager);
+			else if (i == manager->n_cmds - 1)
+				execute_cmdn(manager);
 			else
 			{
 				dup2(pipes[i - 1][0], STDIN_FILENO);
 				dup2(pipes[i][1], STDOUT_FILENO);
+				execute_cmd(manager, i);
 			}
-			// Close all extra pipes ends
-			for (int j = 0; j < number_pipes; j++)
-			{
-				close(pipes[j][0]);
-				close(pipes[j][1]);
-			}
-
-
-			cmd = ft_split(argv[i + 2], ' '); // FIXME index ??
-
-			execvp(cmd[0], cmd);
 		}
 	}
-	// Close all pipes in parent process
-	for (int j = 0; j < number_pipes; j++)
+}
+
+int	main(int argc, char *argv[], char *envp[])
+{
+	t_manager	*manager;
+
+	if (argc < 5)
 	{
-		close(pipes[j][0]);
-		close(pipes[j][1]);
-	}
-	for (int i = 0; i < number_cmds; i++)
-	{
-		waitpid(pids[i], NULL, 0);
+		ft_putendl_fd("USAGE: ./pipex infile cmd1 cmd2 outfile", 2);
+		exit(ERROR_USAGE);
 	}
 
+	manager = init_manager(argc, argv, envp);
+
+	ft_pipex(manager);
+	// Close all pipes in parent process
+	close_pipes(manager);
+	wait_for_children(manager, manager->n_cmds);
 	return (0);
 }
