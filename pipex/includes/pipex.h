@@ -18,7 +18,6 @@
 
 typedef struct s_manager
 {
-	int		argc;
 	char	**argv;
 	char	**envp;
 	char	*infile;
@@ -28,5 +27,18 @@ typedef struct s_manager
 	pid_t	*pids;
 	int		**pipes;
 }	t_manager;
+
+// Error
+void	handle_error(int error_code);
+void	handle_error_exec(char *cmd_name);
+
+// Pipes
+void	close_pipes(int **pipes, int n_pipes);
+void	create_pipes(t_manager *manager);
+
+// Execute
+void	execute_cmd1(t_manager *manager);
+void	execute_cmd(t_manager *manager, int i);
+void	execute_cmdn(t_manager *manager);
 
 #endif
