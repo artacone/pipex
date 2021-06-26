@@ -1,21 +1,16 @@
 #include "../includes/pipex.h"
 
-void	handle_error(int error_code)
+void	handle_error(int error_code, char *str)
 {
-	perror(NULL);
-	exit(error_code);
-}
-
-void	handle_error_exec(char *cmd_name)
-{
-	if (errno == ENOENT)
+	ft_putstr_fd("pipex: ", 2);
+	if (error_code == ERROR_EXEC && errno == ENOENT)
 	{
-		ft_putstr_fd("command not found: ", 2);
-		ft_putendl_fd(cmd_name, 2);
+		ft_putstr_fd(str, 2);
+		ft_putendl_fd(": Command not found", 2);
 	}
 	else
 	{
-		perror(cmd_name);
+		perror(str);
 	}
-	exit(ERROR_EXEC);
+	exit(error_code);
 }

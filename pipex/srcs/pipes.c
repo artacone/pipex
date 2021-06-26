@@ -9,20 +9,20 @@ void	create_pipes(t_manager *manager)
 	n_pipes = manager->n_pipes;
 	pipes = (int **)malloc(n_pipes * sizeof(*pipes));
 	if (pipes == NULL)
-		handle_error(ERROR_ALLOC);
+		handle_error(ERROR_ALLOC, NULL);
 	i = 0;
 	while (i < n_pipes)
 	{
 		pipes[i] = (int *)malloc(2 * sizeof(**pipes));
 		if (pipes[i] == NULL)
-			handle_error(ERROR_ALLOC);
+			handle_error(ERROR_ALLOC, NULL);
 		i++;
 	}
 	i = 0;
 	while (i < n_pipes)
 	{
 		if (pipe(pipes[i]) == -1)
-			handle_error(ERROR_PIPE);
+			handle_error(ERROR_PIPE, NULL);
 		i++;
 	}
 	manager->pipes = pipes;

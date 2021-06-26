@@ -29,8 +29,7 @@ typedef struct s_manager
 }	t_manager;
 
 // Error
-void	handle_error(int error_code);
-void	handle_error_exec(char *cmd_name);
+void	handle_error(int error_code, char *str);
 
 // Pipes
 void	close_pipes(int **pipes, int n_pipes);

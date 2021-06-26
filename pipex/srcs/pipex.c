@@ -23,7 +23,7 @@ static t_manager	*init_manager(int argc, char *argv[], char *envp[])
 	manager = (t_manager *)malloc(sizeof(*manager));
 	if (manager == NULL)
 	{
-		handle_error(ERROR_ALLOC);
+		handle_error(ERROR_ALLOC, NULL);
 	}
 	manager->argv = argv;
 	manager->envp = envp;
@@ -34,7 +34,7 @@ static t_manager	*init_manager(int argc, char *argv[], char *envp[])
 	manager->pids = (pid_t *)malloc(manager->n_cmds * sizeof(pid_t));
 	if (manager->pids == NULL)
 	{
-		handle_error(ERROR_ALLOC);
+		handle_error(ERROR_ALLOC, NULL);
 	}
 	create_pipes(manager);
 	return (manager);
@@ -51,7 +51,7 @@ static void	ft_pipex(t_manager *manager)
 		if ((manager->pids)[i] == -1)
 		{
 			wait_for_children(manager->pids, i);
-			handle_error(ERROR_FORK);
+			handle_error(ERROR_FORK, NULL);
 		}
 		if ((manager->pids)[i] == 0)
 		{

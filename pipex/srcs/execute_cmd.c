@@ -14,7 +14,7 @@ static char	**get_path(char *envp[])
 			path = ft_split(ft_strchr(envp[i], '=') + 1, ':');
 			if (path == NULL)
 			{
-				handle_error(ERROR_ALLOC);
+				handle_error(ERROR_ALLOC, NULL);
 			}
 			break ;
 		}
@@ -40,7 +40,7 @@ static char	*get_cmd_path(char *envp[], char *cmd)
 		to_free = cmd_path;
 		cmd_path = ft_strjoin(cmd_path, cmd);
 		if (cmd_path == NULL)
-			handle_error(ERROR_ALLOC);
+			handle_error(ERROR_ALLOC, NULL);
 		free(to_free);
 		if (access(cmd_path, X_OK) == 0)
 			break ;
@@ -61,7 +61,7 @@ void	execute_cmd(t_manager *manager, int i)
 	cmd = ft_split((manager->argv)[i + 2], ' ');
 	if (cmd == NULL)
 	{
-		handle_error(ERROR_ALLOC);
+		handle_error(ERROR_ALLOC, NULL);
 	}
 	if ((ft_strncmp(cmd[0], "/", 1) == 0) || (ft_strncmp(cmd[0], ".", 1) == 0))
 	{
@@ -72,7 +72,7 @@ void	execute_cmd(t_manager *manager, int i)
 		cmd_path = get_cmd_path(manager->envp, cmd[0]);
 		execve(cmd_path, cmd, manager->envp);
 	}
-	handle_error_exec(cmd[0]);
+	handle_error(ERROR_EXEC, cmd[0]);
 }
 
 void	execute_cmd1(t_manager *manager)
@@ -81,10 +81,10 @@ void	execute_cmd1(t_manager *manager)
 	int	**pipes;
 
 	pipes = manager->pipes;
-	fd_in = open(manager->outfile, O_RDONLY);
+	fd_in = open(manager->infile, O_RDONLY);
 	if (fd_in == -1)
 	{
-		handle_error(ERROR_OPEN);
+		handle_error(ERROR_OPEN, manager->infile);
 	}
 	dup2(fd_in, STDIN_FILENO);
 	close(fd_in);
@@ -100,7 +100,7 @@ void	execute_cmdn(t_manager *manager)
 	fd_out = open(manager->outfile, O_WRONLY | O_TRUNC | O_CREAT, 0777);
 	if (fd_out == -1)
 	{
-		handle_error(ERROR_OPEN);
+		handle_error(ERROR_OPEN, manager->outfile);
 	}
 	pipes = manager->pipes;
 	dup2(fd_out, STDOUT_FILENO);
