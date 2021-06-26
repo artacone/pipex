@@ -57,6 +57,8 @@ void	execute_cmd(t_manager *manager, int i)
 	char	**cmd;
 	char	*cmd_path;
 
+	if (manager->is_here_doc)
+		i++;
 	close_pipes(manager->pipes, manager->n_pipes);
 	cmd = ft_split((manager->argv)[i + 2], ' ');
 	if (cmd == NULL)
@@ -81,7 +83,16 @@ void	execute_cmd1(t_manager *manager)
 	int	**pipes;
 
 	pipes = manager->pipes;
-	fd_in = open(manager->infile, O_RDONLY);
+	if (manager->is_here_doc)
+	{
+		make_here_doc(manager);
+		fd_in = open(manager->infile, O_RDONLY);
+		unlink(manager->infile);
+	}
+	else
+	{
+		fd_in = open(manager->infile, O_RDONLY);
+	}
 	if (fd_in == -1)
 	{
 		handle_error(ERROR_OPEN, manager->infile);

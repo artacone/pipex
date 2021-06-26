@@ -16,28 +16,31 @@
 # define ERROR_OPEN		5
 # define ERROR_EXEC		6
 
+# define USAGE	"usage: ./pipex [here_doc LIMITER]/[infile] cmd1 cmd2 outfile"
+
 typedef struct s_manager
 {
+	int		is_here_doc;
 	char	**argv;
 	char	**envp;
 	char	*infile;
 	char	*outfile;
+	char	*limiter;
 	int		n_cmds;
 	int		n_pipes;
 	pid_t	*pids;
 	int		**pipes;
 }	t_manager;
 
-// Error
 void	handle_error(int error_code, char *str);
 
-// Pipes
 void	close_pipes(int **pipes, int n_pipes);
 void	create_pipes(t_manager *manager);
 
-// Execute
 void	execute_cmd1(t_manager *manager);
 void	execute_cmd(t_manager *manager, int i);
 void	execute_cmdn(t_manager *manager);
+
+void	make_here_doc(t_manager *manager);
 
 #endif

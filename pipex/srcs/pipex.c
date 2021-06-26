@@ -1,10 +1,5 @@
 #include "../includes/pipex.h"
 
-/*
- * TODO
- * bonus <<>>
- */
-
 static void	wait_for_children(pid_t *pids, int n)
 {
 	int	i;
@@ -22,20 +17,24 @@ static t_manager	*init_manager(int argc, char *argv[], char *envp[])
 
 	manager = (t_manager *)malloc(sizeof(*manager));
 	if (manager == NULL)
-	{
 		handle_error(ERROR_ALLOC, NULL);
-	}
+	if (ft_strcmp(argv[1], "here_doc") == 0)
+		manager->is_here_doc = 1;
+	else
+		manager->is_here_doc = 0;
 	manager->argv = argv;
 	manager->envp = envp;
+	if (manager->is_here_doc)
+		manager->n_cmds = argc - 4;
+	else
+		manager->n_cmds = argc - 3;
 	manager->infile = argv[1];
 	manager->outfile = argv[argc - 1];
-	manager->n_cmds = argc - 3;
+	manager->limiter = argv[2];
 	manager->n_pipes = manager->n_cmds - 1;
 	manager->pids = (pid_t *)malloc(manager->n_cmds * sizeof(pid_t));
 	if (manager->pids == NULL)
-	{
 		handle_error(ERROR_ALLOC, NULL);
-	}
 	create_pipes(manager);
 	return (manager);
 }
@@ -90,8 +89,16 @@ int	main(int argc, char *argv[], char *envp[])
 
 	if (argc < 5)
 	{
-		ft_putendl_fd("usage: ./pipex infile cmd1 cmd2 outfile", 2);
+		ft_putendl_fd(USAGE, 2);
 		exit(ERROR_USAGE);
+	}
+	if (ft_strcmp(argv[1], "here_doc") == 0)
+	{
+		if (argc < 6)
+		{
+			ft_putendl_fd(USAGE, 2);
+			exit(ERROR_USAGE);
+		}
 	}
 	manager = init_manager(argc, argv, envp);
 	ft_pipex(manager);
