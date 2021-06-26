@@ -8,6 +8,7 @@ HEADERS_DIR		=	./includes/
 
 SRCS			=	$(SRCS_DIR)error.c \
 					$(SRCS_DIR)execute_cmd.c \
+					$(SRCS_DIR)here_doc.c \
 					$(SRCS_DIR)pipes.c \
 					$(SRCS_DIR)pipex.c
 
