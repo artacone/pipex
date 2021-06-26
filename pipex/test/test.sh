@@ -36,27 +36,33 @@ echo "# ${GREEN}BINARY DOES NOT EXIST:${NC}"
 echo "${CYAN}./pipex file1 \"rabbit\" \"grep a\" file3${NC}" && ./pipex file1 "rabbit" "grep a" file3
 echo "${CYAN}./pipex file1 \"cat -e\" \"hole\" file3${NC}" && ./pipex file1 "cat -e" "hole" file3
 
-echo "# ${GREEN}BINARY RIGHTS ARE INCORRECT:${NC}"
+echo "# ${GREEN}BINARY PERMISSIONS ARE INCORRECT:${NC}"
 touch myprog
 chmod -x myprog
 echo "${CYAN}./pipex file1 \"./myprog\" \"grep a\" file3${NC}" && ./pipex file1 "./myprog" "grep a" file3
 echo "${CYAN}./pipex file1 \"./myprog\" \"ls -l\" file3${NC}" && ./pipex file1 "./myprog" "ls -l" file3
 
 ########################################################################################################################
-#echo "### ${PURPLE}IDENTITY TEST${NC} ###"
+echo "### ${PURPLE}USUAL TESTS${NC} ###"
 ########################################################################################################################
-#echo "${CYAN}./pipex file1 \"cat -e\" \"grep a\" file3${NC}" && ./pipex file1 "cat -e" "grep a" file3
-
-########################################################################################################################
-#echo "### ${PURPLE}SIMPLE VERSION${NC} ###"
-########################################################################################################################
-#echo "${CYAN}./pipex file1 \"cat -e\" \"grep a\" file3${NC}" && ./pipex file1 "cat -e" "grep a" file3
+echo "${CYAN}./pipex file1 \"cat -e\" \"grep a\" file3${NC}" && ./pipex file1 "cat -e" "grep a" file3
+echo "${CYAN}cat file3${NC}" && cat file3
 
 
+echo "${CYAN}./pipex file1 \"/bin/cat -e\" \"grep a\" file3${NC}" && ./pipex file1 "/bin/cat -e" "grep a" file3
+echo "${CYAN}cat file3${NC}" && cat file3
+
+echo "${CYAN}./pipex file1 \"cat -e\" \"grep a\" \"cat\" \"wc -c\" file3${NC}" && ./pipex file1 "cat -e" "grep a" "cat" "wc -c" file3
+echo "${CYAN}cat file3${NC}" && cat file3
+
 ########################################################################################################################
-#echo "### ${PURPLE}ANOTHER SIMPLE VERSION${NC} ###"
+echo "### ${PURPLE}HERE_DOC TESTS${NC} ###"
 ########################################################################################################################
-#echo "${CYAN}./pipex file1 \"cat -e\" \"grep a\" file3${NC}" && ./pipex file1 "cat -e" "grep a" file3
+echo "${CYAN}./pipex here_doc lim \"cat -e\" \"grep a\" file3${NC}" && ./pipex here_doc lim "cat -e" "grep a" file3
+echo "${CYAN}cat file3${NC}" && cat file3
+
+echo "${CYAN}./pipex here_doc lim \"cat -e\" \"grep a\" \"wc -l\" \" wc -c\" \"cat\" file3${NC}" && ./pipex here_doc lim "cat -e" "grep a" "wc -l" "wc -c" "cat" file3
+echo "${CYAN}cat file3${NC}" && cat file3
 
 ########################################################################################################################
 echo "##### ${RED}END TEST PIPEX${NC} #####"
