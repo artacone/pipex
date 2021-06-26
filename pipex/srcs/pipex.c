@@ -239,6 +239,21 @@ void	ft_pipex(t_manager *manager)
 	}
 }
 
+void	free_manager(t_manager *manager)
+{
+	int	i;
+
+	i = 0;
+	while (i < manager->n_pipes)
+	{
+		free(manager->pipes[i]);
+		i++;
+	}
+	free(manager->pipes);
+	free(manager->pids);
+	free(manager);
+}
+
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_manager	*manager;
@@ -252,5 +267,6 @@ int	main(int argc, char *argv[], char *envp[])
 	ft_pipex(manager);
 	close_pipes(manager->pipes, manager->n_pipes);
 	wait_for_children(manager->pids, manager->n_cmds);
+	free_manager(manager);
 	return (0);
 }
