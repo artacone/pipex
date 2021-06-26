@@ -16,7 +16,6 @@ HEADERS			=	$(wildcard $(HEADERS_DIR)*.h)
 
 OBJS			=	$(addprefix $(OBJS_DIR), $(notdir $(SRCS:.c=.o)))
 
-
 CC				=	gcc
 
 CFLAGS			=	-Wall -Wextra -Werror -O3
@@ -37,7 +36,6 @@ $(LIBFT):
 
 $(NAME): $(OBJS) $(LIBFT)
 	$(CC) $(CFLAGS) -o $@ -I $(HEADERS_DIR) $^
-
 
 clean:
 		$(RM) -r $(OBJS_DIR)
