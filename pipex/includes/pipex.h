@@ -6,7 +6,7 @@
 # include <sys/wait.h>
 # include <string.h>
 # include <errno.h>
-# include <stdio.h> // FIXME
+# include <stdio.h>
 # include "../libft/includes/libft.h"
 
 # define ERROR_USAGE	1

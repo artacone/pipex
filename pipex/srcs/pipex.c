@@ -1,7 +1,7 @@
 #include "../includes/pipex.h"
 
 /*
- * TODO free stuff
+ * TODO
  * bonus <<>>
  */
 

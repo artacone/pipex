@@ -97,7 +97,7 @@ void	execute_cmdn(t_manager *manager)
 	int	fd_out;
 	int	**pipes;
 
-	fd_out = open(manager->outfile, O_WRONLY | O_TRUNC | O_CREAT, 0777);
+	fd_out = open(manager->outfile, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 	if (fd_out == -1)
 	{
 		handle_error(ERROR_OPEN, manager->outfile);
